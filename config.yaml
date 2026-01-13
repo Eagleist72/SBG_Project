@@ -4,19 +4,22 @@
 data:
   file_name: "game_data.csv"
   num_games: 200000
+  save_interval: 50 # Save to file every N games
 
 # Model Architecture
 model:
   input_size: 49
-  hidden_layers: [128, 64, 32]
+  # Deeper and wider network to capture complex patterns
+  hidden_layers: [256, 128, 64, 32]
   output_size: 1
 
 # Training Hyperparameters
 training:
   epochs: 100
-  batch_size: 64
+  # Larger batch size for stable gradient estimates and faster GPU training
+  batch_size: 256
   learning_rate: 0.001
-  device: "auto"  # Options: "cuda", "cpu", or "auto"
+  device: "cuda"  # Options: "cuda", "cpu", or "auto"
 
 # File Paths
 paths:

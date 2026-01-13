@@ -207,7 +207,8 @@ def generate_dataset(num_games=None):
     print("Press Ctrl+C to stop and save progress.")
 
     batch_data = []
-    BATCH_SIZE = 50 # Save to file every 50 games
+    # Save to file every N games (configurable)
+    BATCH_SIZE = config['data'].get('save_interval', 50) 
     
     try:
         # Use TQDM implementation

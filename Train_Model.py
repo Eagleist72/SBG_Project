@@ -128,6 +128,12 @@ def train_brain(resume=False, checkpoint_path=CHECKPOINT_PATH):
             print(f"  -> New best model saved ({MODEL_SAVE_PATH})!")
         
         # Save regular checkpoint
+        if os.path.exists(checkpoint_path):
+            import shutil
+            backup_path = checkpoint_path + ".bak"
+            shutil.copy(checkpoint_path, backup_path)
+            print(f"  -> Backup saved ({backup_path})")
+
         torch.save({
             'epoch': epoch,
             'model_state_dict': model.state_dict(),
