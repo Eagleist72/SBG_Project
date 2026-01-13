@@ -1,0 +1,24 @@
+# Strategic Board Game Configuration
+
+# Data Collection Settings
+data:
+  file_name: "game_data.csv"
+  num_games: 200000
+
+# Model Architecture
+model:
+  input_size: 49
+  hidden_layers: [128, 64, 32]
+  output_size: 1
+
+# Training Hyperparameters
+training:
+  epochs: 100
+  batch_size: 64
+  learning_rate: 0.001
+  device: "auto"  # Options: "cuda", "cpu", or "auto"
+
+# File Paths
+paths:
+  model_checkpoint: "ai_brain.pth"
+  training_checkpoint: "checkpoint.pth"
