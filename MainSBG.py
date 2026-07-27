@@ -38,11 +38,21 @@ class Game:
 
         # LOAD BRAIN: Load the pre-trained neural network
         self.brain_loaded = False
-        
-        if DEVICE_CONFIG == 'auto':
-            self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        else:
-            self.device = torch.device(DEVICE_CONFIG)
+        self.model = None
+
+        def get_device(config_setting):
+            if config_setting == 'cpu':
+                return torch.device('cpu')
+            try:
+                if torch.cuda.is_available():
+                    return torch.device('cuda')
+                elif config_setting == 'cuda':
+                    print("WARNING: CUDA requested, but PyTorch was compiled without CUDA or no GPU found. Using CPU.")
+            except Exception as e:
+                print(f"WARNING: CUDA check failed ({e}). Using CPU.")
+            return torch.device('cpu')
+
+        self.device = get_device(DEVICE_CONFIG)
 
         try:
             # Model architecture is loaded via config in NeuralNet
@@ -108,9 +118,9 @@ class Game:
         
         # Pass the brain reference to the clone
         # We don't need to deepcopy the model, just reference it
-        new_game.model = self.model
-        new_game.brain_loaded = self.brain_loaded
-        new_game.device = self.device
+        new_game.model = getattr(self, 'model', None)
+        new_game.brain_loaded = getattr(self, 'brain_loaded', False)
+        new_game.device = getattr(self, 'device', torch.device('cpu'))
         return new_game
 
     def get_neighbors(self, pos):
@@ -173,11 +183,16 @@ class Game:
         moves = self.get_all_valid_moves(1)
         if not moves: return None
 
+        import random
+
+        # Fallback to random move if brain is not loaded or model is missing
+        if not getattr(self, 'brain_loaded', False) or getattr(self, 'model', None) is None:
+            return random.choice(moves)
+
         best_score = -float('inf')
         best_move = None
 
         # Optional: Shuffle moves to add variety if scores are equal
-        import random
         random.shuffle(moves)
 
         # Limit moves to prevent UI freezing if there are too many (optimization)

@@ -28,11 +28,20 @@ FILE_NAME = config['data']['file_name']
 CHECKPOINT_PATH = config['paths']['training_checkpoint']
 MODEL_SAVE_PATH = config['paths']['model_checkpoint']
 
-# Check for CUDA
-if DEVICE_CONFIG == 'auto':
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-else:
-    device = torch.device(DEVICE_CONFIG)
+# Check for CUDA safely
+def get_device(config_setting):
+    if config_setting == 'cpu':
+        return torch.device('cpu')
+    try:
+        if torch.cuda.is_available():
+            return torch.device('cuda')
+        elif config_setting == 'cuda':
+            print("WARNING: CUDA requested, but PyTorch was compiled without CUDA or no GPU found. Using CPU.")
+    except Exception as e:
+        print(f"WARNING: CUDA check failed ({e}). Using CPU.")
+    return torch.device('cpu')
+
+device = get_device(DEVICE_CONFIG)
 print(f"Using device: {device}")
 
 class GameDataset(Dataset):
@@ -77,7 +86,7 @@ def train_brain(resume=False, checkpoint_path=CHECKPOINT_PATH):
     # Resume from checkpoint
     if resume and os.path.exists(checkpoint_path):
         print(f"Resuming from checkpoint: {checkpoint_path}")
-        checkpoint = torch.load(checkpoint_path)
+        checkpoint = torch.load(checkpoint_path, map_location=device)
         model.load_state_dict(checkpoint['model_state_dict'])
         optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         start_epoch = checkpoint['epoch'] + 1
